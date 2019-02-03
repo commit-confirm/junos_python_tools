@@ -25,72 +25,84 @@ for POLICY in POLICY_LIST[:]:
   POLICY_SEQ = POLICY['policy-information']['policy-sequence-number']
   POLICY_SRC_ZONE = POLICY['policy-information']['context-information']['source-zone-name']
   POLICY_DST_ZONE = POLICY['policy-information']['context-information']['destination-zone-name']
+  POLICY_SRC_ADD= POLICY['policy-information']['source-addresses']['source-address']
+  #POLICY_DST_ADD = POLICY['policy-information']['destination-addresses']['destination-address']
   #POLICY_DST_APP_ADD = POLICY['policy-information']['applications']['application']['application-term']
-  #POLICY_DST_APP_TERM = POLICY['policy-information']['applications']['application']
   #
   #Printing Results
   #
-  print("[",POLICY_SEQ,"]:", "Policy Name: ", POLICY_NAME)
-  print("[",POLICY_SEQ,"]:", "Policy Action: ", POLICY_ACTION)
-  print("[",POLICY_SEQ,"]:", "Policy State: ", POLICY_STATE)
-  print("[",POLICY_SEQ,"]:", "Policy Seq: ", POLICY_SEQ)
-  print("[",POLICY_SEQ,"]:", "Policy SRC Zone: ", POLICY_SRC_ZONE)
-  print("[",POLICY_SEQ,"]:", "Policy DST Zone: ", POLICY_DST_ZONE)
+  print("Policy Name: ", POLICY_NAME)
+  print("Policy Action: ", POLICY_ACTION)
+  print("Policy State: ", POLICY_STATE)
+  print("Policy Seq: ", POLICY_SEQ)
+  print("Policy SRC Zone: ", POLICY_SRC_ZONE)
   #
   #Checking if source addresses is a list and if so creating it
   #
-  POLICY_SRC_ADD = POLICY['policy-information']['source-addresses']['source-address']
   POLICY_SRC_ADDRESS_PREFIX_LIST = []
   if isinstance(POLICY_SRC_ADD, list):
     for ADDRESS_PREFIX in POLICY_SRC_ADD[:]:
       POLICY_SRC_ADDRESS_PREFIX_LIST.append(ADDRESS_PREFIX['prefixes']['address-prefix'])
-    print("[",POLICY['policy-information']['policy-sequence-number'],"]", ": Policy Sources: ", POLICY_SRC_ADDRESS_PREFIX_LIST)
+    print("Policy Sources: ", POLICY_SRC_ADDRESS_PREFIX_LIST)
   elif not isinstance(POLICY_SRC_ADD, list):
     POLICY_SRC_ADDRESS_PREFIX_LIST.append(POLICY_SRC_ADD['prefixes']['address-prefix'])
-    print("[",POLICY['policy-information']['policy-sequence-number'],"]", ": Policy Sources: ", POLICY_SRC_ADDRESS_PREFIX_LIST)
+    print("Policy Sources: ", POLICY_SRC_ADDRESS_PREFIX_LIST)
+  #
+  print("Policy Dst Zone: ", POLICY_DST_ZONE)
   #
   #Checking if destination addresses is a list and if so creating it
   #
-  POLICY_DST_ADD = POLICY['policy-information']['destination-addresses']['destination-address']
   POLICY_DST_ADDRESS_PREFIX_LIST = []
   if isinstance(POLICY_DST_ADD, list):
     for ADDRESS_PREFIX in POLICY_DST_ADD[:]:
       POLICY_DST_ADDRESS_PREFIX_LIST.append(ADDRESS_PREFIX['prefixes']['address-prefix'])
-    print("[",POLICY['policy-information']['policy-sequence-number'],"]""Policy Destinations: ", POLICY_DST_ADDRESS_PREFIX_LIST)
+    print("Policy Destinations: ", POLICY_DST_ADDRESS_PREFIX_LIST)
   elif not isinstance(POLICY_DST_ADD, list):
     POLICY_DST_ADDRESS_PREFIX_LIST.append(POLICY_DST_ADD['prefixes']['address-prefix'])
-    print("[",POLICY['policy-information']['policy-sequence-number'],"]", "Policy Destinations: ", POLICY_DST_ADDRESS_PREFIX_LIST)
+    print("Policy Destinations: ", POLICY_DST_ADDRESS_PREFIX_LIST)
   #
   #Checking destination ports and storing
   #  
-  if isinstance(POLICY_DST_APP_ADD, list):
-    for APP_SET in POLICY_DST_APP_ADD:
-      PORTS = {
-        "PROTO":APP_SET['protocol'],
-        "LP":APP_SET['destination-port-range']['low'],
-        "HP":APP_SET['destination-port-range']['high'],
-        "PORT": 0
-      }
-      if PORTS['LP'] == PORTS['HP']:
-        PORTS['PORT'] = PORTS['LP']
-      elif PORTS['LP'] != PORTS['HP']:
-        PORTS['PORT'] = PORTS['LP'],PORTS['HP']
-      print(PORTS['PORT'], PORTS['PROTO'])
-  elif not isinstance(POLICY_DST_APP_ADD, list):
-    PORTS = {
-      "PROTO":POLICY_DST_APP_ADD['protocol'],
-      "LP":POLICY_DST_APP_ADD['destination-port-range']['low'],
-      "HP":POLICY_DST_APP_ADD['destination-port-range']['high'],
-      "PORT": 0
-    }
-    if PORTS['LP'] == PORTS['HP']:
-      PORTS['PORT'] = PORTS['LP']
-    elif PORTS['LP'] != PORTS['HP']:
-      PORTS['PORT'] = PORTS['LP'],PORTS['HP']
-    print(PORTS['PORT'], PORTS['PROTO'])
+  if isinstance(POLICY_DST_APP_TERM, list):
+    for item in POLICY_DST_APP_TERM:
+      if isinstance(item['application-term'], list):
+        for item in item['application-term']:
+          print(item['protocol'], item['destination-port-range']['low'],":",item['destination-port-range']['high'])
+      else:
+        print(item['application-term']['protocol'], item['application-term']['destination-port-range']['low'],":",item['application-term']['destination-port-range']['high'])
   print("\n")
 
 
 
+# / Useful troubleshooting functions: 
 
-#pp.pprint(POLICY['policy-information']['policy-name'])
+def traverse(obj, prev_path = "obj", path_repr = "{}[{!r}]".format):
+    if isinstance(obj,dict):
+        it = obj.items()
+    elif isinstance(obj,list):
+        it = enumerate(obj)
+    else:
+        yield prev_path,obj
+        return
+    for k,v in it:
+        for data in traverse(v, path_repr(prev_path,k), path_repr):
+            yield data
+
+
+#for path,value in traverse(POLICY_LIST[:9]):
+#  print("{} = {}".format(path,value))
+
+def LISTCHECK(d):
+  if isinstance(d, dict): #check if it's a dict before using .iteritems()
+    for k, v in d.iteritems():
+      if isinstance(v, (list,dict)): #check for either list or dict
+        print(v)
+      else:
+        print("Key :{0},  Value: {1}".format(k, v))
+  elif isinstance(d, list): #allow for list input too
+    item_list = []
+    for item in d:
+      print(item)
+
+#test = POLICY_LIST[9]['policy-information']['applications']['application']
+#LISTCHEC(test)
