@@ -64,6 +64,7 @@ for POLICY in POLICY_LIST[:]:
   #
   #Checking destination ports and storing
   #  
+  POLICY_DST_APP_TERM = POLICY['policy-information']['applications']['application']
   if isinstance(POLICY_DST_APP_TERM, list):
     for item in POLICY_DST_APP_TERM:
       if isinstance(item['application-term'], list):
