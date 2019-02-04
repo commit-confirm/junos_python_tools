@@ -52,6 +52,7 @@ for POLICY in POLICY_LIST[:]:
   #
   #Checking if destination addresses is a list and if so creating it
   #
+  POLICY_DST_ADD = POLICY['policy-information']['destination-addresses']['destination-address']
   POLICY_DST_ADDRESS_PREFIX_LIST = []
   if isinstance(POLICY_DST_ADD, list):
     for ADDRESS_PREFIX in POLICY_DST_ADD[:]:
