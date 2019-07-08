@@ -52,6 +52,7 @@ for POLICY in POLICY_LIST[:]:
   #
   #Checking if destination addresses is a list and if so creating it
   #
+  POLICY_DST_ADD = POLICY['policy-information']['destination-addresses']['destination-address']
   POLICY_DST_ADDRESS_PREFIX_LIST = []
   if isinstance(POLICY_DST_ADD, list):
     for ADDRESS_PREFIX in POLICY_DST_ADD[:]:
@@ -63,16 +64,18 @@ for POLICY in POLICY_LIST[:]:
   #
   #Checking destination ports and storing
   #  
+  POLICY_DST_APP_TERM = POLICY['policy-information']['applications']['application']
   if isinstance(POLICY_DST_APP_TERM, list):
     for item in POLICY_DST_APP_TERM:
-      if isinstance(item['application-term'], list):
-        for item in item['application-term']:
-          print(item['protocol'], item['destination-port-range']['low'],":",item['destination-port-range']['high'])
-      else:
-        print(item['application-term']['protocol'], item['application-term']['destination-port-range']['low'],":",item['application-term']['destination-port-range']['high'])
+      print(item['application-term']['protocol'], item['application-term']['destination-port-range']['low'],":",item['application-term']['destination-port-range']['high'], end =" ")
+  if isinstance(POLICY_DST_APP_TERM, dict):
+    if isinstance(POLICY_DST_APP_TERM['application-term'], list):
+      for item in POLICY_DST_APP_TERM['application-term']:
+        print(item['protocol'], item['destination-port-range']['low'],":",item['destination-port-range']['high'])
+    if isinstance(POLICY_DST_APP_TERM['application-term'], dict):
+      for item in POLICY_DST_APP_TERM:
+        print(POLICY_DST_APP_TERM['application-term']['protocol'], POLICY_DST_APP_TERM['application-term']['destination-port-range']['low'],":",POLICY_DST_APP_TERM['application-term']['destination-port-range']['high'])
   print("\n")
-
-
 
 # / Useful troubleshooting functions: 
 
